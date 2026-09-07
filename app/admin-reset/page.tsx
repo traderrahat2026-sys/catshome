@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 
+const ADMIN_EMAIL = "traderrahat2026@gmail.com";
+
 export default function AdminResetPage() {
   const [mode, setMode] = useState<"request" | "update">("request");
 
@@ -16,18 +18,16 @@ export default function AdminResetPage() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
-  // --------------------------------------------------
-  // Detect password recovery session
-  // --------------------------------------------------
+  // Check whether the user arrived through a password recovery link
   useEffect(() => {
     let mounted = true;
 
     async function checkRecoverySession() {
-      const { data } = await supabase.auth.getSession();
+      const { data, error } = await supabase.auth.getSession();
 
       if (!mounted) return;
 
-      if (data.session) {
+      if (!error && data.session) {
         setMode("update");
       }
     }
@@ -39,13 +39,8 @@ export default function AdminResetPage() {
     } = supabase.auth.onAuthStateChange((event, session) => {
       if (!mounted) return;
 
-      if (
-        event === "PASSWORD_RECOVERY" ||
-        event === "SIGNED_IN"
-      ) {
-        if (session) {
-          setMode("update");
-        }
+      if (event === "PASSWORD_RECOVERY" && session) {
+        setMode("update");
       }
     });
 
@@ -55,16 +50,14 @@ export default function AdminResetPage() {
     };
   }, []);
 
-  // --------------------------------------------------
-  // Send password reset email
-  // --------------------------------------------------
+  // Send password recovery email
   async function sendResetLink() {
     setError("");
     setSuccess("");
     setLoading(true);
 
     const { error } = await supabase.auth.resetPasswordForEmail(
-      "forbusiness0101@gmail.com",
+      ADMIN_EMAIL,
       {
         redirectTo: `${window.location.origin}/admin-reset`,
       }
@@ -80,9 +73,7 @@ export default function AdminResetPage() {
     setSent(true);
   }
 
-  // --------------------------------------------------
   // Update password
-  // --------------------------------------------------
   async function updatePassword() {
     setError("");
     setSuccess("");
@@ -120,7 +111,6 @@ export default function AdminResetPage() {
     setPassword("");
     setConfirmPassword("");
 
-    // Sign out after successful password change
     await supabase.auth.signOut();
 
     setTimeout(() => {
@@ -129,7 +119,7 @@ export default function AdminResetPage() {
   }
 
   // --------------------------------------------------
-  // Reset request success screen
+  // RESET LINK SENT SCREEN
   // --------------------------------------------------
   if (mode === "request" && sent) {
     return (
@@ -144,12 +134,16 @@ export default function AdminResetPage() {
           </h1>
 
           <p className="mt-3 text-sm leading-6 text-white/50">
-            A password reset link has been sent to the admin email.
+            A password reset link has been sent to:
           </p>
 
-          <p className="mt-3 text-xs leading-5 text-white/30">
-            Open the email and click the reset link. You will be
-            brought back here to create a new password.
+          <p className="mt-2 break-all text-sm font-semibold text-white">
+            {ADMIN_EMAIL}
+          </p>
+
+          <p className="mt-4 text-xs leading-5 text-white/30">
+            Open the email and click the password reset link.
+            You will be brought back here to create a new password.
           </p>
 
           <button
@@ -179,7 +173,7 @@ export default function AdminResetPage() {
   }
 
   // --------------------------------------------------
-  // New password screen
+  // NEW PASSWORD SCREEN
   // --------------------------------------------------
   if (mode === "update") {
     return (
@@ -195,13 +189,13 @@ export default function AdminResetPage() {
             </h1>
 
             <p className="mt-2 text-sm text-white/40">
-              Create a New Admin Password
+              Admin Password Reset
             </p>
           </div>
 
           <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-6 shadow-2xl">
             <h2 className="text-xl font-semibold">
-              Set New Password
+              Create New Password
             </h2>
 
             <p className="mt-2 text-sm leading-6 text-white/40">
@@ -287,7 +281,7 @@ export default function AdminResetPage() {
   }
 
   // --------------------------------------------------
-  // Request reset link screen
+  // SEND RESET LINK SCREEN
   // --------------------------------------------------
   return (
     <main className="flex min-h-screen items-center justify-center bg-black px-4 text-white">
@@ -312,9 +306,19 @@ export default function AdminResetPage() {
           </h2>
 
           <p className="mt-2 text-sm leading-6 text-white/40">
-            We will send a secure password reset link to the admin
-            account.
+            We will send a secure password reset link to the
+            admin account.
           </p>
+
+          <div className="mt-5 rounded-xl border border-white/10 bg-black/40 px-4 py-3">
+            <p className="text-xs text-white/30">
+              Admin Email
+            </p>
+
+            <p className="mt-1 break-all text-sm font-medium text-white/80">
+              {ADMIN_EMAIL}
+            </p>
+          </div>
 
           {error && (
             <div className="mt-5 rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm leading-5 text-red-400">
