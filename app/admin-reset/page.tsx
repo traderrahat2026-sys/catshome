@@ -6,7 +6,9 @@ import { supabase } from "@/lib/supabase";
 const ADMIN_EMAIL = "traderrahat2026@gmail.com";
 
 export default function AdminResetPage() {
-  const [mode, setMode] = useState<"request" | "update">("request");
+  const [mode, setMode] = useState<"request" | "update" | "checking">(
+    "checking"
+  );
 
   const [sent, setSent] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -18,21 +20,41 @@ export default function AdminResetPage() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
-  // Check whether the user arrived through a password recovery link
   useEffect(() => {
     let mounted = true;
 
-    async function checkRecoverySession() {
+    async function checkRecovery() {
+      const hash = window.location.hash;
+
+      const searchParams = new URLSearchParams(window.location.search);
+
+      const hasRecoveryType =
+        searchParams.get("type") === "recovery" ||
+        hash.includes("type=recovery");
+
       const { data, error } = await supabase.auth.getSession();
 
       if (!mounted) return;
 
+      if (!error && data.session && hasRecoveryType) {
+        setMode("update");
+        return;
+      }
+
       if (!error && data.session) {
         setMode("update");
+        return;
       }
+
+      if (hasRecoveryType) {
+        setMode("update");
+        return;
+      }
+
+      setMode("request");
     }
 
-    checkRecoverySession();
+    checkRecovery();
 
     const {
       data: { subscription },
@@ -50,7 +72,6 @@ export default function AdminResetPage() {
     };
   }, []);
 
-  // Send password recovery email
   async function sendResetLink() {
     setError("");
     setSuccess("");
@@ -73,7 +94,6 @@ export default function AdminResetPage() {
     setSent(true);
   }
 
-  // Update password
   async function updatePassword() {
     setError("");
     setSuccess("");
@@ -96,7 +116,7 @@ export default function AdminResetPage() {
     setUpdating(true);
 
     const { error } = await supabase.auth.updateUser({
-      password,
+      password: password,
     });
 
     setUpdating(false);
@@ -118,9 +138,26 @@ export default function AdminResetPage() {
     }, 1500);
   }
 
-  // --------------------------------------------------
-  // RESET LINK SENT SCREEN
-  // --------------------------------------------------
+  if (mode === "checking") {
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-black px-4 text-white">
+        <div className="text-center">
+          <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-2xl bg-white text-3xl font-black text-black">
+            C
+          </div>
+
+          <h1 className="text-xl font-semibold">
+            CATS HOME
+          </h1>
+
+          <p className="mt-3 text-sm text-white/40">
+            Checking password reset...
+          </p>
+        </div>
+      </main>
+    );
+  }
+
   if (mode === "request" && sent) {
     return (
       <main className="flex min-h-screen items-center justify-center bg-black px-4 text-white">
@@ -143,7 +180,7 @@ export default function AdminResetPage() {
 
           <p className="mt-4 text-xs leading-5 text-white/30">
             Open the email and click the password reset link.
-            You will be brought back here to create a new password.
+            You will return here to create a new password.
           </p>
 
           <button
@@ -172,9 +209,6 @@ export default function AdminResetPage() {
     );
   }
 
-  // --------------------------------------------------
-  // NEW PASSWORD SCREEN
-  // --------------------------------------------------
   if (mode === "update") {
     return (
       <main className="flex min-h-screen items-center justify-center bg-black px-4 text-white">
@@ -199,7 +233,7 @@ export default function AdminResetPage() {
             </h2>
 
             <p className="mt-2 text-sm leading-6 text-white/40">
-              Enter a new secure password for your admin account.
+              Enter a new password for your admin account.
             </p>
 
             {error && (
@@ -222,7 +256,9 @@ export default function AdminResetPage() {
               <input
                 type="password"
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={(event) =>
+                  setPassword(event.target.value)
+                }
                 placeholder="Enter new password"
                 autoComplete="new-password"
                 disabled={updating}
@@ -238,8 +274,8 @@ export default function AdminResetPage() {
               <input
                 type="password"
                 value={confirmPassword}
-                onChange={(e) =>
-                  setConfirmPassword(e.target.value)
+                onChange={(event) =>
+                  setConfirmPassword(event.target.value)
                 }
                 placeholder="Confirm new password"
                 autoComplete="new-password"
@@ -280,9 +316,6 @@ export default function AdminResetPage() {
     );
   }
 
-  // --------------------------------------------------
-  // SEND RESET LINK SCREEN
-  // --------------------------------------------------
   return (
     <main className="flex min-h-screen items-center justify-center bg-black px-4 text-white">
       <div className="w-full max-w-md">
