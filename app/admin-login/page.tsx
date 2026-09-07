@@ -1,3 +1,4 @@
+
 "use client";
 
 import { FormEvent, useState } from "react";
@@ -178,16 +179,6 @@ export default function AdminLoginPage() {
               {loading ? "Signing in..." : "Sign In"}
             </button>
           </form>
-
-          {/* Forgot Password */}
-          <div className="mt-5 text-center">
-            <Link
-              href="/admin-reset"
-              className="text-sm text-white/40 transition hover:text-white"
-            >
-              Forgot password?
-            </Link>
-          </div>
 
           {/* Back */}
           <div className="mt-5 border-t border-white/10 pt-5 text-center">
