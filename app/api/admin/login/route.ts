@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 
-const ADMIN_USERNAME = "CATS HOME founder";
-const ADMIN_EMAIL = "forbussines0101@gmail.com";
+const ADMIN_USERNAME = "cats home admin";
+const ADMIN_EMAIL = "traderrahat2026@gmail.com";
 
 export async function POST(request: Request) {
   try {
