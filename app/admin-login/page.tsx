@@ -6,35 +6,38 @@ import { useRouter } from "next/navigation";
 export default function AdminLoginPage() {
   const router = useRouter();
 
-  const [code, setCode] = useState("");
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  async function handleAccess(event: React.FormEvent<HTMLFormElement>) {
+  async function handleLogin(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
     setLoading(true);
     setError("");
 
     try {
-      const response = await fetch("/api/admin/access", {
+      const response = await fetch("/api/admin/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          code: code.trim(),
+          username: username.trim(),
+          password,
         }),
       });
 
       const data = await response.json();
 
       if (!response.ok) {
-        setError(data.error || "Invalid access code.");
+        setError(data.error || "Invalid login credentials.");
         return;
       }
 
-      router.push("/admin");
+      router.replace("/admin");
+      router.refresh();
     } catch {
       setError("Something went wrong. Please try again.");
     } finally {
@@ -51,39 +54,53 @@ export default function AdminLoginPage() {
             C
           </div>
 
-          <h1 className="text-3xl font-bold">
+          <h1 className="text-3xl font-bold tracking-tight">
             CATS HOME
           </h1>
 
           <p className="mt-2 text-sm text-white/40">
-            Private Admin Access
+            Admin Login
           </p>
         </div>
 
-        <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-7 shadow-2xl">
+        <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-7 shadow-2xl backdrop-blur-xl">
 
           <div className="mb-7">
             <h2 className="text-xl font-semibold">
-              Welcome
+              Welcome Back
             </h2>
 
-            <p className="mt-2 text-sm text-white/40">
-              Enter your secret access code to open the Admin Panel.
+            <p className="mt-2 text-sm leading-6 text-white/40">
+              Sign in to access the Admin Panel.
             </p>
           </div>
 
-          <form onSubmit={handleAccess}>
+          <form onSubmit={handleLogin}>
 
             <label className="mb-2 block text-sm font-medium text-white/70">
-              Secret Access Code
+              Username
+            </label>
+
+            <input
+              type="text"
+              value={username}
+              onChange={(event) => setUsername(event.target.value)}
+              placeholder="Enter username"
+              autoComplete="username"
+              required
+              className="w-full rounded-xl border border-white/10 bg-black px-4 py-4 text-sm text-white outline-none transition placeholder:text-white/20 focus:border-white/40 focus:ring-1 focus:ring-white/20"
+            />
+
+            <label className="mb-2 mt-5 block text-sm font-medium text-white/70">
+              Password
             </label>
 
             <input
               type="password"
-              value={code}
-              onChange={(event) => setCode(event.target.value)}
-              placeholder="Enter your secret code"
-              autoComplete="off"
+              value={password}
+              onChange={(event) => setPassword(event.target.value)}
+              placeholder="Enter password"
+              autoComplete="current-password"
               required
               className="w-full rounded-xl border border-white/10 bg-black px-4 py-4 text-sm text-white outline-none transition placeholder:text-white/20 focus:border-white/40 focus:ring-1 focus:ring-white/20"
             />
@@ -99,15 +116,23 @@ export default function AdminLoginPage() {
               disabled={loading}
               className="mt-5 w-full rounded-xl bg-white px-4 py-4 font-semibold text-black transition hover:bg-white/90 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-50"
             >
-              {loading ? "Checking..." : "Open Admin"}
+              {loading ? "Signing in..." : "Sign In"}
             </button>
 
           </form>
 
           <button
             type="button"
-            onClick={() => router.push("/")}
+            onClick={() => router.push("/admin-reset")}
             className="mt-5 w-full text-center text-sm text-white/40 transition hover:text-white"
+          >
+            Forgot Password?
+          </button>
+
+          <button
+            type="button"
+            onClick={() => router.push("/")}
+            className="mt-4 w-full text-center text-sm text-white/40 transition hover:text-white"
           >
             ← Back to Store
           </button>
