@@ -33,10 +33,10 @@ export async function POST(request: Request) {
     });
 
     if (error) {
-      console.error("SUPABASE LOGIN ERROR:", error);
+      console.error("ADMIN SUPABASE LOGIN ERROR:", error);
 
       return NextResponse.json(
-        { error: error.message },
+        { error: "Invalid login credentials." },
         { status: 401 }
       );
     }
@@ -45,10 +45,10 @@ export async function POST(request: Request) {
       success: true,
     });
   } catch (error) {
-    console.error("LOGIN ERROR:", error);
+    console.error("ADMIN LOGIN ERROR:", error);
 
     return NextResponse.json(
-      { error: "Login server error." },
+      { error: "Server error." },
       { status: 500 }
     );
   }
